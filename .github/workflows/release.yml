@@ -8,22 +8,46 @@ name: Create Release
 
 jobs:
   build:
-    name: Create Release
+
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
-          draft: false
-          prerelease: false
+    - uses: actions/checkout@master
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: false
+        prerelease: false
+        
+    - name: Create ninja archive
+      shell: bash
+      env:
+        ZIP_NAME: ${{ github.ref }}
+      run: |
+        mkdir artifact
+        7z a artifact/${ZIP_NAME}.zip $(find ./build -name ninja -or -name ninja.exe)
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-archives
+        path: artifact
+
+    - name: Upload release asset
+      if: github.event.action == 'published'
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
