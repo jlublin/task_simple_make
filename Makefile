@@ -34,4 +34,8 @@ build/%.o: %.c
 	@[ -e $(dir $@) ] || mkdir -p $(dir $@) # Create build directory if it does not exist
 	$(CC) -c -o $@ $<
 
+check: $(TARGET_BINARY)
+	@# Execute binary and verify output, it returns 0 (success) or 1 (fail)
+	[ "$$($(TARGET_BINARY))" = "Hello world!" ]
+
 .PHONY: all clean
