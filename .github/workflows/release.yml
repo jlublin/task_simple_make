@@ -17,6 +17,7 @@ jobs:
       run: make
     - name: make check
       run: make check
+      
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -25,34 +26,23 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
-        body: |
-          Changes in this Release
-          - First Change
-          - Second Change
         draft: false
         prerelease: false
         
-    - name: Create ninja archive
+    - name: Create archive
       shell: bash
       env:
         ZIP_NAME: ${{ github.ref }}
       run: |
         mkdir artifact
-        7z a artifact/${ZIP_NAME}.zip $(find ./build -name ninja -or -name ninja.exe)
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: binary-archives
-        path: artifact
+        7z a artifact/${ZIP_NAME}.zip ./build/hello
 
     - name: Upload release asset
-      if: github.event.action == 'published'
       uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./artifact/${{ github.ref }}.zip
         asset_name: ${{ github.ref }}.zip
         asset_content_type: application/zip
