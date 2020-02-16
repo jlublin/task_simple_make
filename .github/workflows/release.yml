@@ -29,6 +29,11 @@ jobs:
         draft: false
         prerelease: false
         
+    - name: Get version
+      id: get_version
+      shell: bash
+      run: echo ::set-output name=version::$(git name-rev --name-only --tags HEAD)
+        
     - name: Create archive
       shell: bash
       run: |
@@ -42,5 +47,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./artifact/artifact.zip
-        asset_name: task_simple_make-${{ github.ref }}.zip
+        asset_name: task_simple_make-${{ steps.get_version.outputs.version }}.zip
         asset_content_type: application/zip
